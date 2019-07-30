@@ -25,8 +25,8 @@ Options:
   -o OUT_DIR, --outdir=OUT_DIR
                         set result directory
   -s START, --start=START
-                        set series start range
-  -e END, --end=END     set series end range
+                        set series start range(default: 0)
+  -e END, --end=END     set series end range(default: 100)
   -f FLAIR, --flair=FLAIR
                         set flair util directory
   -c, --no-compress     sig not compress
@@ -48,6 +48,20 @@ Options:
 ```
 
 requires `pelf` `sigmake` `zipsig`
+
+### Config target platform
+config directly in `allirt.py`, 
+put the one you want to make signature into the list
+```
+_REQ = {
+    'arch':[
+        'i386',
+        'armhf',
+        'amd64',
+        'arm64'
+    ]
+}
+```
  
 ### Get all of signatures of libc packages
 ```
@@ -104,28 +118,19 @@ $ python3 allirt.py -f flair -s 1 -e 2 -o tmp
 ### Result
 ```
 └── ubuntu
-    ├── 4.10\ (warty)
-    │   └── amd64
-    │       └── libc6_2.3.2.ds1-13ubuntu2_amd64.sig
-    └── 5.04\ (hoary)
-        ├── amd64
-        │   ├── libc6_2.3.2.ds1-20ubuntu13_amd64.sig
-        │   └── libc6_2.3.2.ds1-20ubuntu15_amd64.sig
-        ├── i386
-        │   ├── libc6_2.3.2.ds1-20ubuntu13_i386.sig
-        │   └── libc6_2.3.2.ds1-20ubuntu15_i386.sig
-        ├── ia64
-        └── powerpc
-            ├── libc6_2.3.2.ds1-20ubuntu13_powerpc.sig
-            └── libc6_2.3.2.ds1-20ubuntu15_powerpc.sig
+    └── libc6-dev
+        ├── 4.10\ (warty)
+        │   └── amd64
+        │       └── libc6_2.3.2.ds1-13ubuntu2_amd64.sig
+        └── 5.04\ (hoary)
+            ├── amd64
+            │   ├── libc6_2.3.2.ds1-20ubuntu13_amd64.sig
+            │   └── libc6_2.3.2.ds1-20ubuntu15_amd64.sig
+            ├── i386
+            │   ├── libc6_2.3.2.ds1-20ubuntu13_i386.sig
+            │   └── libc6_2.3.2.ds1-20ubuntu15_i386.sig
+            ├── ia64
+            └── powerpc
+                ├── libc6_2.3.2.ds1-20ubuntu13_powerpc.sig
+                └── libc6_2.3.2.ds1-20ubuntu15_powerpc.sig
 ```
-
-## TODO
-* save a file (static library ex: libc.a)
-* fliar.py command line interface
-
-*suggests me your idea and issue*
-
-this tool uses `launchpad.net` mirror. I am finding package mirrors.
-
-Thanks to @hstocks - `Unknown relocation type`

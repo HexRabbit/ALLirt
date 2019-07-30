@@ -19,8 +19,15 @@ class Allirt():
 
     _a_name = ''
     _logger = None
-    _SKIPS = {'arch':['sparc', 'hppa']}
-    
+    _REQ = {
+        'arch':[
+            'i386',
+            'armhf',
+            'amd64',
+            'arm64'
+        ]
+    }
+
     def __init__(self, os_name, package_name, a_name, flair='flair', log_level=logging.INFO, is_compress=True):
         self._flair = Flair(flair)
         self._archive = Launchpad()
@@ -34,10 +41,10 @@ class Allirt():
         formatter = logging.Formatter('[%(levelname)s] %(message)s')
         stream_handler.setFormatter(formatter)
         self._logger.addHandler(stream_handler)
-    
+
     def download_all(self, out_dir=''):
         return self.download(out_dir)
-    
+
     def download(self, out_dir='', start=0, end=0):
         os_name = self._os_name
         package_name = self._package_name
@@ -48,7 +55,8 @@ class Allirt():
             series_list = series_list[start:end]
         print()
         os_dir_name = os.path.join(out_dir, os_name)
-        not os.path.exists(os_dir_name) and os.mkdir(os_dir_name)
+        os_dir_name = os.path.join(os_dir_name, package_name)
+        not os.path.exists(os_dir_name) and os.makedirs(os_dir_name)
         with TemporaryDirectory() as deb_tmp_path:
             for series_idx, series  in enumerate(series_list):
                 series_name, series_version = series
@@ -61,7 +69,7 @@ class Allirt():
                 for arch_idx, arch in enumerate(archs):
                     print()
                     self._logger.info('Architecture ({}/{}) : {}'.format(arch_idx+1, len(archs), arch))
-                    if arch in self._SKIPS['arch']:
+                    if arch not in self._REQ['arch']:
                         self._logger.warning('SKIPPED')
                         continue
                     arch_dir_name = os.path.join(series_dir_name, arch)
@@ -83,9 +91,9 @@ class Allirt():
                                 if os.path.exists(sig_name):
                                     raise FileExistsError()
                                 info = self._archive.download_package_with_info(info, deb_tmp_path, filename)
-                            
+
                                 size = info['size']
-                                
+
                                 self._logger.info('Download Completed : {} ({} bytes)'.format(info['url'], size))
                                 info = self._flair.deb_to_sig(deb_path, self._a_name, sig_name, sig_desc, self._is_compress)
                                 self._logger.info('Target library : {}'.format(info['a']))
@@ -110,17 +118,18 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print('Usage : python3 alirt.py (-o <out_dir> -s <start> -e <end> -f <flair_dir> -c <compress>)')
         exit()
-    
+
     usage = "Usage: %prog -o <out_dir>"
     parser = OptionParser(usage = usage)
     parser.add_option("-o", "--outdir", dest="out_dir", default='.', action="store", help="set result directory")
     parser.add_option("-s", "--start", dest="start", default=0, action="store", type='int', help="set series start range")
-    parser.add_option("-e", "--end", dest="end", default=0, action="store", type='int', help="set series end range")
+    parser.add_option("-e", "--end", dest="end", default=100, action="store", type='int', help="set series end range")
     parser.add_option("-f", "--flair", dest="flair", default='flair', action="store", help="set flair util directory")
     parser.add_option("-c", "--no-compress", dest="is_compress", default=True, action="store_false", help="sig not compress")
-    
+
     options, args = parser.parse_args()
-    
-#   allirt = Allirt('ubuntu', 'libssl-dev', 'libssl.a', options.flair, is_compress=options.is_compress)
+
     allirt = Allirt('ubuntu', 'libc6-dev', 'libc.a', options.flair, is_compress=options.is_compress)
     allirt.download(options.out_dir, options.start, options.end)
+    #allirt = Allirt('ubuntu', 'libssl-dev', 'libssl.a', options.flair, is_compress=options.is_compress)
+    #allirt.download(options.out_dir, options.start, options.end)
